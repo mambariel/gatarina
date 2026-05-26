@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitor Renal da Tatá</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --ok: #16a34a;
+      --alert: #dc2626;
+      --border: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      color: white;
+      padding: 28px 18px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 16px 40px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 15px;
+    }
+
+    textarea { resize: vertical; min-height: 70px; }
+
+    button {
+      margin-top: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover { filter: brightness(0.95); }
+
+    .secondary {
+      background: #111827;
+    }
+
+    .danger {
+      background: var(--alert);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .status-ok { color: var(--ok); font-weight: bold; }
+    .status-alert { color: var(--alert); font-weight: bold; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f9fafb;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    canvas {
+      width: 100% !important;
+      max-height: 420px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Monitor Renal da Tatá</h1>
+    <p>Registro de ureia, creatinina e evolução dos exames</p>
+  </header>
+
+  <main>
+    <section class="grid">
+      <div class="card">
+        <h2>Novo registro</h2>
+        <form id="examForm">
+          <label for="date">Data do exame</label>
+          <input type="date" id="date" required />
+
+          <label for="urea">Ureia - mg/dL</label>
+          <input type="number" id="urea" step="0.01" placeholder="Ex.: 62" required />
+
+          <label for="creatinine">Creatinina - mg/dL</label>
+          <input type="number" id="creatinine" step="0.01" placeholder="Ex.: 1.8" required />
+
+          <label for="notes">Observações</label>
+          <textarea id="notes" placeholder="Ex.: jejum, hidratação, medicação, orientação veterinária..."></textarea>
+
+          <button type="submit">Salvar registro</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Parâmetros esperados</h2>
+        <p class="hint">Ajuste conforme o laboratório da Tatá. Os valores abaixo são apenas referência inicial para acompanhamento.</p>
+
+        <label for="ureaMin">Ureia mínima - mg/dL</label>
+        <input type="number" id="ureaMin" step="0.01" />
+
+        <label for="ureaMax">Ureia máxima - mg/dL</label>
+        <input type="number" id="ureaMax" step="0.01" />
+
+        <label for="creatMin">Creatinina mínima - mg/dL</label>
+        <input type="number" id="creatMin" step="0.01" />
+
+        <label for="creatMax">Creatinina máxima - mg/dL</label>
+        <input type="number" id="creatMax" step="0.01" />
+
+        <button id="saveParams" class="secondary">Salvar parâmetros</button>
+        <p class="hint">Observação: se o exame trouxer BUN/ureia nitrogenada, não lance como ureia sem converter.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Gráfico de evolução</h2>
+      <canvas id="renalChart"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Histórico</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Ureia</th>
+              <th>Status ureia</th>
+              <th>Creatinina</th>
+              <th>Status creatinina</th>
+              <th>Observações</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+      <button id="exportCsv" class="secondary">Exportar CSV</button>
+      <button id="clearAll" class="danger">Apagar todos os registros</button>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "tataRenalRecords";
+    const PARAMS_KEY = "tataRenalParams";
+
+    const defaultParams = {
+      ureaMin: 36.4,
+      ureaMax: 74.9,
+      creatMin: 0.8,
+      creatMax: 2.1
+    };
+
+    let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    let params = JSON.parse(localStorage.getItem(PARAMS_KEY)) || defaultParams;
+    let chart;
+
+    const form = document.getElementById("examForm");
+    const historyBody = document.getElementById("historyBody");
+
+    const fields = {
+      ureaMin: document.getElementById("ureaMin"),
+      ureaMax: document.getElementById("ureaMax"),
+      creatMin: document.getElementById("creatMin"),
+      creatMax: document.getElementById("creatMax")
+    };
+
+    function fillParamFields() {
+      fields.ureaMin.value = params.ureaMin;
+      fields.ureaMax.value = params.ureaMax;
+      fields.creatMin.value = params.creatMin;
+      fields.creatMax.value = params.creatMax;
+    }
+
+    function saveRecords() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    function saveParams() {
+      localStorage.setItem(PARAMS_KEY, JSON.stringify(params));
+    }
+
+    function getStatus(value, min, max) {
+      if (value < min) return { text: "Abaixo", className: "status-alert" };
+      if (value > max) return { text: "Acima", className: "status-alert" };
+      return { text: "Dentro", className: "status-ok" };
+    }
+
+    function sortedRecords() {
+      return [...records].sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+
+    function renderTable() {
+      historyBody.innerHTML = "";
+
+      sortedRecords().forEach((record) => {
+        const ureaStatus = getStatus(record.urea, params.ureaMin, params.ureaMax);
+        const creatStatus = getStatus(record.creatinine, params.creatMin, params.creatMax);
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${formatDate(record.date)}</td>
+          <td>${record.urea.toFixed(2)}</td>
+          <td class="${ureaStatus.className}">${ureaStatus.text}</td>
+          <td>${record.creatinine.toFixed(2)}</td>
+          <td class="${creatStatus.className}">${creatStatus.text}</td>
+          <td>${record.notes || "-"}</td>
+          <td><button class="danger" onclick="deleteRecord('${record.id}')">Excluir</button></td>
+        `;
+        historyBody.appendChild(row);
+      });
+    }
+
+    function renderChart() {
+      const ordered = sortedRecords();
+      const labels = ordered.map((item) => formatDate(item.date));
+      const ureaData = ordered.map((item) => item.urea);
+      const creatData = ordered.map((item) => item.creatinine);
+
+      const ctx = document.getElementById("renalChart");
+
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Ureia mg/dL",
+              data: ureaData,
+              borderWidth: 3,
+              tension: 0.3
+            },
+            {
+              label: "Creatinina mg/dL",
+              data: creatData,
+              borderWidth: 3,
+              tension: 0.3
+            },
+            {
+              label: "Limite superior ureia",
+              data: labels.map(() => params.ureaMax),
+              borderWidth: 1,
+              borderDash: [6, 6],
+              pointRadius: 0
+            },
+            {
+              label: "Limite superior creatinina",
+              data: labels.map(() => params.creatMax),
+              borderWidth: 1,
+              borderDash: [6, 6],
+              pointRadius: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: { mode: "index", intersect: false }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function render() {
+      renderTable();
+      renderChart();
+    }
+
+    function formatDate(dateString) {
+      const [year, month, day] = dateString.split("-");
+      return `${day}/${month}/${year}`;
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const record = {
+        id: crypto.randomUUID(),
+        date: document.getElementById("date").value,
+        urea: Number(document.getElementById("urea").value),
+        creatinine: Number(document.getElementById("creatinine").value),
+        notes: document.getElementById("notes").value.trim()
+      };
+
+      records.push(record);
+      saveRecords();
+      form.reset();
+      render();
+    });
+
+    document.getElementById("saveParams").addEventListener("click", () => {
+      params = {
+        ureaMin: Number(fields.ureaMin.value),
+        ureaMax: Number(fields.ureaMax.value),
+        creatMin: Number(fields.creatMin.value),
+        creatMax: Number(fields.creatMax.value)
+      };
+
+      saveParams();
+      render();
+      alert("Parâmetros salvos.");
+    });
+
+    function deleteRecord(id) {
+      records = records.filter((record) => record.id !== id);
+      saveRecords();
+      render();
+    }
+
+    document.getElementById("clearAll").addEventListener("click", () => {
+      const confirmed = confirm("Tem certeza que deseja apagar todos os registros?");
+      if (!confirmed) return;
+      records = [];
+      saveRecords();
+      render();
+    });
+
+    document.getElementById("exportCsv").addEventListener("click", () => {
+      const header = "Data,Ureia mg/dL,Creatinina mg/dL,Observacoes\n";
+      const rows = sortedRecords().map((record) => {
+        return `${record.date},${record.urea},${record.creatinine},"${(record.notes || "").replaceAll('"', '""')}"`;
+      }).join("\n");
+
+      const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "historico-renal-tata.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+
+    fillParamFields();
+    render();
+  </script>
+</body>
+</html>
