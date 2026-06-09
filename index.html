@@ -3,302 +3,736 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monitor Renal da Tatá</title>
+  <title>GATARINA | Painel da Tatá</title>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     :root {
-      --bg: #f4f7fb;
+      --bg: #f6f3ef;
       --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --primary: #2563eb;
-      --ok: #16a34a;
-      --alert: #dc2626;
-      --border: #e5e7eb;
+      --text: #2b2926;
+      --muted: #6f6860;
+      --line: #e7ded4;
+      --accent: #7b4f2c;
+      --accent-2: #c08a5a;
+      --danger: #b42318;
+      --ok: #287d3c;
+      --shadow: 0 14px 35px rgba(43, 41, 38, 0.10);
+      --radius: 22px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(192, 138, 90, .22), transparent 34%),
+        linear-gradient(135deg, #f8f4ef, #efe6dc);
       color: var(--text);
     }
 
     header {
-      background: linear-gradient(135deg, #2563eb, #1e40af);
+      padding: 32px 20px 16px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .cat-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      background: var(--accent);
       color: white;
-      padding: 28px 18px;
-      text-align: center;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      box-shadow: var(--shadow);
     }
 
-    header h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
-    }
-
-    header p {
+    h1 {
       margin: 0;
-      opacity: 0.9;
+      font-size: clamp(2rem, 5vw, 4.4rem);
+      line-height: 0.96;
+      letter-spacing: -2px;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 720px;
+    }
+
+    .status-pill {
+      background: rgba(123, 79, 44, 0.10);
+      border: 1px solid rgba(123, 79, 44, 0.18);
+      color: var(--accent);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.9rem;
     }
 
     main {
-      max-width: 1100px;
-      margin: 24px auto;
-      padding: 0 16px 40px;
-      display: grid;
-      gap: 18px;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: 1fr;
       gap: 18px;
     }
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    @media (min-width: 920px) {
+      .grid.two {
+        grid-template-columns: 420px 1fr;
+      }
+
+      .grid.cards {
+        grid-template-columns: repeat(4, 1fr);
+      }
     }
 
-    h2 {
-      margin-top: 0;
-      font-size: 20px;
+    .card {
+      background: rgba(255, 255, 255, .86);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(231, 222, 212, .9);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.15rem;
     }
 
     label {
       display: block;
       margin: 12px 0 6px;
-      font-weight: bold;
-      font-size: 14px;
+      color: var(--muted);
+      font-size: .9rem;
+      font-weight: 700;
     }
 
-    input, textarea, button {
+    input,
+    textarea,
+    button {
       width: 100%;
-      padding: 11px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      font-size: 15px;
+      font: inherit;
     }
 
-    textarea { resize: vertical; min-height: 70px; }
+    input,
+    textarea {
+      border: 1px solid var(--line);
+      background: #fffaf6;
+      border-radius: 14px;
+      padding: 12px 13px;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 4px rgba(192, 138, 90, .18);
+    }
+
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
 
     button {
-      margin-top: 14px;
-      background: var(--primary);
-      color: white;
       border: none;
+      border-radius: 14px;
+      padding: 13px 16px;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 800;
+      transition: transform .15s ease, opacity .15s ease;
     }
 
-    button:hover { filter: brightness(0.95); }
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+      margin-top: 16px;
+    }
 
     .secondary {
-      background: #111827;
+      background: #efe4d9;
+      color: var(--accent);
     }
 
     .danger {
-      background: var(--alert);
+      background: #fff1ef;
+      color: var(--danger);
+      border: 1px solid #f8c9c3;
     }
 
-    .hint {
+    .kpi {
+      min-height: 132px;
+    }
+
+    .kpi-title {
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.4;
+      font-size: .86rem;
+      font-weight: 800;
+      margin-bottom: 10px;
     }
 
-    .status-ok { color: var(--ok); font-weight: bold; }
-    .status-alert { color: var(--alert); font-weight: bold; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      overflow: hidden;
-      border-radius: 12px;
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -1px;
     }
 
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-      font-size: 14px;
+    .kpi-sub {
+      color: var(--muted);
+      font-size: .86rem;
+      margin-top: 8px;
+      line-height: 1.35;
     }
 
-    th {
-      background: #f9fafb;
+    .flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .flag.ok {
+      background: #ebf7ee;
+      color: var(--ok);
+    }
+
+    .flag.warn {
+      background: #fff1ef;
+      color: var(--danger);
+    }
+
+    .chart-wrap {
+      height: 360px;
     }
 
     .table-wrap {
       overflow-x: auto;
     }
 
-    canvas {
-      width: 100% !important;
-      max-height: 420px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 740px;
+    }
+
+    th,
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: .92rem;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.45;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .toolbar button {
+      width: auto;
+      min-width: 120px;
+    }
+
+    .message {
+      margin-top: 12px;
+      border-radius: 14px;
+      padding: 12px;
+      display: none;
+      font-size: .9rem;
+      line-height: 1.35;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.success {
+      background: #ebf7ee;
+      color: var(--ok);
+    }
+
+    .message.error {
+      background: #fff1ef;
+      color: var(--danger);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--muted);
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 20px 40px;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 720px) {
+      .config-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
   <header>
-    <h1>Monitor Renal da Tatá</h1>
-    <p>Registro de ureia, creatinina e evolução dos exames</p>
+    <div class="hero">
+      <div>
+        <div class="brand">
+          <div class="cat-icon">🐾</div>
+          <div>
+            <h1>GATARINA</h1>
+            <p class="subtitle">
+              Painel de acompanhamento da ureia e creatinina da Tatá.
+              Registre exames, visualize evolução e acompanhe tendências ao longo do tempo.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="status-pill" id="connectionStatus">Aguardando configuração</div>
+    </div>
   </header>
 
   <main>
-    <section class="grid">
+    <section class="card" style="margin-bottom: 18px;">
+      <h2>Configuração</h2>
+      <p class="small">
+        Antes de publicar, cole no código a URL do seu Web App do Google Apps Script.
+        Os limites abaixo são opcionais e devem seguir a referência do laboratório/veterinário.
+      </p>
+      <div class="config-grid">
+        <div>
+          <label for="ureiaLimite">Limite superior da ureia</label>
+          <input id="ureiaLimite" type="number" step="0.01" placeholder="Ex.: conforme o laudo" />
+        </div>
+        <div>
+          <label for="creatininaLimite">Limite superior da creatinina</label>
+          <input id="creatininaLimite" type="number" step="0.01" placeholder="Ex.: conforme o laudo" />
+        </div>
+        <div>
+          <label for="pesoAlvo">Peso de referência da Tatá</label>
+          <input id="pesoAlvo" type="number" step="0.01" placeholder="Opcional" />
+        </div>
+      </div>
+      <button class="secondary" type="button" onclick="saveConfig()">Salvar limites neste navegador</button>
+      <div class="message" id="configMsg"></div>
+    </section>
+
+    <section class="grid cards" style="margin-bottom: 18px;">
+      <div class="card kpi">
+        <div class="kpi-title">Última ureia</div>
+        <div class="kpi-value" id="lastUreia">—</div>
+        <div class="kpi-sub" id="lastUreiaSub">Sem registro</div>
+        <div id="ureiaFlag"></div>
+      </div>
+
+      <div class="card kpi">
+        <div class="kpi-title">Última creatinina</div>
+        <div class="kpi-value" id="lastCreatinina">—</div>
+        <div class="kpi-sub" id="lastCreatininaSub">Sem registro</div>
+        <div id="creatininaFlag"></div>
+      </div>
+
+      <div class="card kpi">
+        <div class="kpi-title">Último peso</div>
+        <div class="kpi-value" id="lastPeso">—</div>
+        <div class="kpi-sub" id="lastPesoSub">Opcional</div>
+      </div>
+
+      <div class="card kpi">
+        <div class="kpi-title">Registros</div>
+        <div class="kpi-value" id="totalRegistros">0</div>
+        <div class="kpi-sub" id="periodoRegistros">Nenhum período carregado</div>
+      </div>
+    </section>
+
+    <section class="grid two">
       <div class="card">
-        <h2>Novo registro</h2>
+        <h2>Novo exame</h2>
+
         <form id="examForm">
-          <label for="date">Data do exame</label>
-          <input type="date" id="date" required />
+          <label for="data">Data do exame</label>
+          <input id="data" name="data" type="date" required />
 
-          <label for="urea">Ureia - mg/dL</label>
-          <input type="number" id="urea" step="0.01" placeholder="Ex.: 62" required />
+          <div class="row">
+            <div>
+              <label for="ureia">Ureia</label>
+              <input id="ureia" name="ureia" type="number" step="0.01" inputmode="decimal" required placeholder="Ex.: 74.2" />
+            </div>
+            <div>
+              <label for="creatinina">Creatinina</label>
+              <input id="creatinina" name="creatinina" type="number" step="0.01" inputmode="decimal" required placeholder="Ex.: 2.1" />
+            </div>
+          </div>
 
-          <label for="creatinine">Creatinina - mg/dL</label>
-          <input type="number" id="creatinine" step="0.01" placeholder="Ex.: 1.8" required />
+          <label for="peso">Peso</label>
+          <input id="peso" name="peso" type="number" step="0.01" inputmode="decimal" placeholder="Opcional" />
 
-          <label for="notes">Observações</label>
-          <textarea id="notes" placeholder="Ex.: jejum, hidratação, medicação, orientação veterinária..."></textarea>
+          <label for="observacao">Observação</label>
+          <textarea id="observacao" name="observacao" placeholder="Ex.: troca de ração, medicação, consulta, comportamento..."></textarea>
 
-          <button type="submit">Salvar registro</button>
+          <button class="primary" id="saveBtn" type="submit">Salvar exame</button>
+          <div class="message" id="formMsg"></div>
         </form>
       </div>
 
       <div class="card">
-        <h2>Parâmetros esperados</h2>
-        <p class="hint">Ajuste conforme o laboratório da Tatá. Os valores abaixo são apenas referência inicial para acompanhamento.</p>
-
-        <label for="ureaMin">Ureia mínima - mg/dL</label>
-        <input type="number" id="ureaMin" step="0.01" />
-
-        <label for="ureaMax">Ureia máxima - mg/dL</label>
-        <input type="number" id="ureaMax" step="0.01" />
-
-        <label for="creatMin">Creatinina mínima - mg/dL</label>
-        <input type="number" id="creatMin" step="0.01" />
-
-        <label for="creatMax">Creatinina máxima - mg/dL</label>
-        <input type="number" id="creatMax" step="0.01" />
-
-        <button id="saveParams" class="secondary">Salvar parâmetros</button>
-        <p class="hint">Observação: se o exame trouxer BUN/ureia nitrogenada, não lance como ureia sem converter.</p>
+        <div class="toolbar">
+          <div>
+            <h2 style="margin-bottom: 3px;">Evolução dos exames</h2>
+            <div class="small">Ureia e creatinina por data do exame.</div>
+          </div>
+          <button class="secondary" type="button" onclick="loadRecords()">Atualizar</button>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="mainChart"></canvas>
+        </div>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Gráfico de evolução</h2>
-      <canvas id="renalChart"></canvas>
-    </section>
+    <section class="card" style="margin-top: 18px;">
+      <div class="toolbar">
+        <div>
+          <h2 style="margin-bottom: 3px;">Histórico</h2>
+          <div class="small">Registros gravados no Google Sheets.</div>
+        </div>
+        <button class="secondary" type="button" onclick="exportCSV()">Exportar CSV</button>
+      </div>
 
-    <section class="card">
-      <h2>Histórico</h2>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Data</th>
               <th>Ureia</th>
-              <th>Status ureia</th>
               <th>Creatinina</th>
-              <th>Status creatinina</th>
-              <th>Observações</th>
+              <th>Peso</th>
+              <th>Observação</th>
               <th>Ação</th>
             </tr>
           </thead>
-          <tbody id="historyBody"></tbody>
+          <tbody id="recordsBody">
+            <tr>
+              <td colspan="6" class="empty">Nenhum registro carregado.</td>
+            </tr>
+          </tbody>
         </table>
       </div>
-      <button id="exportCsv" class="secondary">Exportar CSV</button>
-      <button id="clearAll" class="danger">Apagar todos os registros</button>
     </section>
   </main>
 
+  <footer>
+    GATARINA é um painel de acompanhamento doméstico e não substitui orientação veterinária.
+    Use os valores de referência indicados no laudo e converse com a veterinária responsável pela Tatá.
+  </footer>
+
   <script>
-    const STORAGE_KEY = "tataRenalRecords";
-    const PARAMS_KEY = "tataRenalParams";
+    /*
+      1) Publique o Apps Script como Web App.
+      2) Copie a URL terminada em /exec.
+      3) Cole abaixo, mantendo as aspas.
+    */
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8MmD4hdDw-dfmdkiuq7mwX1KeVYoke4FlejMgVdY2zP5Y21tNIuXpI5E8pcmx0Ga4/exec";
 
-    const defaultParams = {
-      ureaMin: 36.4,
-      ureaMax: 74.9,
-      creatMin: 0.8,
-      creatMax: 2.1
-    };
+    let records = [];
+    let chart = null;
 
-    let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    let params = JSON.parse(localStorage.getItem(PARAMS_KEY)) || defaultParams;
-    let chart;
+    const $ = (id) => document.getElementById(id);
 
-    const form = document.getElementById("examForm");
-    const historyBody = document.getElementById("historyBody");
+    document.addEventListener("DOMContentLoaded", () => {
+      $("data").valueAsDate = new Date();
+      loadConfig();
 
-    const fields = {
-      ureaMin: document.getElementById("ureaMin"),
-      ureaMax: document.getElementById("ureaMax"),
-      creatMin: document.getElementById("creatMin"),
-      creatMax: document.getElementById("creatMax")
-    };
+      if (isConfigured()) {
+        $("connectionStatus").textContent = "Conectado ao Google Sheets";
+        loadRecords();
+      } else {
+        $("connectionStatus").textContent = "Cole a URL do Apps Script no código";
+      }
 
-    function fillParamFields() {
-      fields.ureaMin.value = params.ureaMin;
-      fields.ureaMax.value = params.ureaMax;
-      fields.creatMin.value = params.creatMin;
-      fields.creatMax.value = params.creatMax;
+      $("examForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        saveExam();
+      });
+    });
+
+    function isConfigured() {
+      return APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes("COLE_AQUI");
     }
 
-    function saveRecords() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    }
+    function jsonpRequest(params) {
+      return new Promise((resolve, reject) => {
+        if (!isConfigured()) {
+          reject(new Error("A URL do Apps Script ainda não foi configurada no index.html."));
+          return;
+        }
 
-    function saveParams() {
-      localStorage.setItem(PARAMS_KEY, JSON.stringify(params));
-    }
+        const callbackName = "gatarinaCallback_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+        const url = new URL(APPS_SCRIPT_URL);
 
-    function getStatus(value, min, max) {
-      if (value < min) return { text: "Abaixo", className: "status-alert" };
-      if (value > max) return { text: "Acima", className: "status-alert" };
-      return { text: "Dentro", className: "status-ok" };
-    }
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            url.searchParams.set(key, String(value));
+          }
+        });
 
-    function sortedRecords() {
-      return [...records].sort((a, b) => new Date(a.date) - new Date(b.date));
-    }
+        url.searchParams.set("callback", callbackName);
 
-    function renderTable() {
-      historyBody.innerHTML = "";
+        const script = document.createElement("script");
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(new Error("Tempo esgotado ao conectar com o Apps Script."));
+        }, 15000);
 
-      sortedRecords().forEach((record) => {
-        const ureaStatus = getStatus(record.urea, params.ureaMin, params.ureaMax);
-        const creatStatus = getStatus(record.creatinine, params.creatMin, params.creatMax);
+        function cleanup() {
+          clearTimeout(timeout);
+          delete window[callbackName];
+          if (script.parentNode) {
+            script.parentNode.removeChild(script);
+          }
+        }
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${formatDate(record.date)}</td>
-          <td>${record.urea.toFixed(2)}</td>
-          <td class="${ureaStatus.className}">${ureaStatus.text}</td>
-          <td>${record.creatinine.toFixed(2)}</td>
-          <td class="${creatStatus.className}">${creatStatus.text}</td>
-          <td>${record.notes || "-"}</td>
-          <td><button class="danger" onclick="deleteRecord('${record.id}')">Excluir</button></td>
-        `;
-        historyBody.appendChild(row);
+        window[callbackName] = (data) => {
+          cleanup();
+          if (data && data.ok === false) {
+            reject(new Error(data.error || "Erro retornado pelo Apps Script."));
+          } else {
+            resolve(data);
+          }
+        };
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("Não foi possível carregar a resposta do Apps Script."));
+        };
+
+        script.src = url.toString();
+        document.body.appendChild(script);
       });
     }
 
+    async function loadRecords() {
+      try {
+        setConnection("Carregando dados...");
+        const response = await jsonpRequest({ action: "list" });
+        records = normalizeRecords(response.records || []);
+        renderAll();
+        setConnection("Conectado ao Google Sheets");
+      } catch (error) {
+        setConnection("Erro de conexão");
+        showMessage("formMsg", error.message, "error");
+      }
+    }
+
+    async function saveExam() {
+      const saveBtn = $("saveBtn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Salvando...";
+
+      try {
+        const payload = {
+          action: "create",
+          data: $("data").value,
+          ureia: $("ureia").value,
+          creatinina: $("creatinina").value,
+          peso: $("peso").value,
+          observacao: $("observacao").value
+        };
+
+        await jsonpRequest(payload);
+        $("examForm").reset();
+        $("data").valueAsDate = new Date();
+        showMessage("formMsg", "Exame salvo com sucesso.", "success");
+        await loadRecords();
+      } catch (error) {
+        showMessage("formMsg", error.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Salvar exame";
+      }
+    }
+
+    async function deleteRecord(id) {
+      const confirmed = confirm("Deseja excluir este registro?");
+      if (!confirmed) return;
+
+      try {
+        await jsonpRequest({ action: "delete", id });
+        await loadRecords();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    function normalizeRecords(items) {
+      return items
+        .map((item) => ({
+          id: item.id,
+          data: item.data,
+          ureia: toNumber(item.ureia),
+          creatinina: toNumber(item.creatinina),
+          peso: toNumber(item.peso),
+          observacao: item.observacao || "",
+          createdAt: item.createdAt || ""
+        }))
+        .filter((item) => item.data)
+        .sort((a, b) => new Date(a.data) - new Date(b.data));
+    }
+
+    function toNumber(value) {
+      if (value === "" || value === null || value === undefined) return null;
+      const number = Number(String(value).replace(",", "."));
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function renderAll() {
+      renderKpis();
+      renderChart();
+      renderTable();
+    }
+
+    function renderKpis() {
+      $("totalRegistros").textContent = records.length;
+
+      if (!records.length) {
+        $("lastUreia").textContent = "—";
+        $("lastCreatinina").textContent = "—";
+        $("lastPeso").textContent = "—";
+        $("lastUreiaSub").textContent = "Sem registro";
+        $("lastCreatininaSub").textContent = "Sem registro";
+        $("lastPesoSub").textContent = "Opcional";
+        $("periodoRegistros").textContent = "Nenhum período carregado";
+        $("ureiaFlag").innerHTML = "";
+        $("creatininaFlag").innerHTML = "";
+        return;
+      }
+
+      const last = records[records.length - 1];
+      const previous = records.length > 1 ? records[records.length - 2] : null;
+
+      $("lastUreia").textContent = formatNumber(last.ureia);
+      $("lastCreatinina").textContent = formatNumber(last.creatinina);
+      $("lastPeso").textContent = last.peso ? `${formatNumber(last.peso)} kg` : "—";
+
+      $("lastUreiaSub").textContent = variationText(last.ureia, previous?.ureia, "registro anterior");
+      $("lastCreatininaSub").textContent = variationText(last.creatinina, previous?.creatinina, "registro anterior");
+      $("lastPesoSub").textContent = last.data ? `Último exame em ${formatDate(last.data)}` : "Opcional";
+
+      const firstDate = formatDate(records[0].data);
+      const lastDate = formatDate(last.data);
+      $("periodoRegistros").textContent = records.length === 1 ? `1 exame em ${lastDate}` : `${firstDate} a ${lastDate}`;
+
+      renderFlag("ureiaFlag", last.ureia, Number(localStorage.getItem("gatarina_ureiaLimite")));
+      renderFlag("creatininaFlag", last.creatinina, Number(localStorage.getItem("gatarina_creatininaLimite")));
+    }
+
+    function variationText(current, previous, label) {
+      if (current === null || previous === null || previous === undefined) return "Sem comparação";
+      const diff = current - previous;
+      const sign = diff > 0 ? "+" : "";
+      return `${sign}${formatNumber(diff)} em relação ao ${label}`;
+    }
+
+    function renderFlag(elementId, value, limit) {
+      if (!value || !limit) {
+        $(elementId).innerHTML = "";
+        return;
+      }
+
+      if (value > limit) {
+        $(elementId).innerHTML = `<span class="flag warn">Acima do limite configurado</span>`;
+      } else {
+        $(elementId).innerHTML = `<span class="flag ok">Dentro do limite configurado</span>`;
+      }
+    }
+
     function renderChart() {
-      const ordered = sortedRecords();
-      const labels = ordered.map((item) => formatDate(item.date));
-      const ureaData = ordered.map((item) => item.urea);
-      const creatData = ordered.map((item) => item.creatinine);
+      const ctx = $("mainChart");
 
-      const ctx = document.getElementById("renalChart");
+      const labels = records.map((r) => formatDate(r.data));
+      const ureiaData = records.map((r) => r.ureia);
+      const creatininaData = records.map((r) => r.creatinina);
 
-      if (chart) chart.destroy();
+      if (chart) {
+        chart.destroy();
+      }
 
       chart = new Chart(ctx, {
         type: "line",
@@ -306,117 +740,150 @@
           labels,
           datasets: [
             {
-              label: "Ureia mg/dL",
-              data: ureaData,
-              borderWidth: 3,
-              tension: 0.3
+              label: "Ureia",
+              data: ureiaData,
+              tension: 0.25,
+              pointRadius: 4,
+              borderWidth: 3
             },
             {
-              label: "Creatinina mg/dL",
-              data: creatData,
-              borderWidth: 3,
-              tension: 0.3
-            },
-            {
-              label: "Limite superior ureia",
-              data: labels.map(() => params.ureaMax),
-              borderWidth: 1,
-              borderDash: [6, 6],
-              pointRadius: 0
-            },
-            {
-              label: "Limite superior creatinina",
-              data: labels.map(() => params.creatMax),
-              borderWidth: 1,
-              borderDash: [6, 6],
-              pointRadius: 0
+              label: "Creatinina",
+              data: creatininaData,
+              tension: 0.25,
+              pointRadius: 4,
+              borderWidth: 3
             }
           ]
         },
         options: {
+          maintainAspectRatio: false,
           responsive: true,
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
           plugins: {
-            legend: { position: "bottom" },
-            tooltip: { mode: "index", intersect: false }
+            legend: {
+              position: "bottom"
+            },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const index = items[0].dataIndex;
+                  const obs = records[index]?.observacao;
+                  return obs ? `Observação: ${obs}` : "";
+                }
+              }
+            }
           },
           scales: {
-            y: { beginAtZero: true }
+            y: {
+              beginAtZero: false
+            }
           }
         }
       });
     }
 
-    function render() {
-      renderTable();
-      renderChart();
+    function renderTable() {
+      const tbody = $("recordsBody");
+
+      if (!records.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty">Nenhum registro carregado.</td></tr>`;
+        return;
+      }
+
+      const rows = [...records].reverse().map((record) => `
+        <tr>
+          <td>${formatDate(record.data)}</td>
+          <td>${formatNumber(record.ureia)}</td>
+          <td>${formatNumber(record.creatinina)}</td>
+          <td>${record.peso ? `${formatNumber(record.peso)} kg` : "—"}</td>
+          <td>${escapeHtml(record.observacao || "—")}</td>
+          <td>
+            <button class="danger" type="button" onclick="deleteRecord('${record.id}')">Excluir</button>
+          </td>
+        </tr>
+      `);
+
+      tbody.innerHTML = rows.join("");
+    }
+
+    function saveConfig() {
+      localStorage.setItem("gatarina_ureiaLimite", $("ureiaLimite").value);
+      localStorage.setItem("gatarina_creatininaLimite", $("creatininaLimite").value);
+      localStorage.setItem("gatarina_pesoAlvo", $("pesoAlvo").value);
+      showMessage("configMsg", "Configuração salva neste navegador.", "success");
+      renderKpis();
+    }
+
+    function loadConfig() {
+      $("ureiaLimite").value = localStorage.getItem("gatarina_ureiaLimite") || "";
+      $("creatininaLimite").value = localStorage.getItem("gatarina_creatininaLimite") || "";
+      $("pesoAlvo").value = localStorage.getItem("gatarina_pesoAlvo") || "";
+    }
+
+    function exportCSV() {
+      if (!records.length) {
+        alert("Não há registros para exportar.");
+        return;
+      }
+
+      const header = ["data", "ureia", "creatinina", "peso", "observacao"];
+      const lines = records.map((r) => [
+        r.data,
+        r.ureia ?? "",
+        r.creatinina ?? "",
+        r.peso ?? "",
+        `"${String(r.observacao || "").replaceAll('"', '""')}"`
+      ].join(","));
+
+      const csv = [header.join(","), ...lines].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "gatarina.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function setConnection(text) {
+      $("connectionStatus").textContent = text;
+    }
+
+    function showMessage(id, text, type) {
+      const el = $(id);
+      el.textContent = text;
+      el.className = `message show ${type}`;
+      setTimeout(() => {
+        el.className = "message";
+      }, 5000);
+    }
+
+    function formatNumber(value) {
+      if (value === null || value === undefined || Number.isNaN(value)) return "—";
+      return Number(value).toLocaleString("pt-BR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      });
     }
 
     function formatDate(dateString) {
-      const [year, month, day] = dateString.split("-");
+      if (!dateString) return "—";
+      const [year, month, day] = String(dateString).split("-");
+      if (!year || !month || !day) return dateString;
       return `${day}/${month}/${year}`;
     }
 
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-
-      const record = {
-        id: crypto.randomUUID(),
-        date: document.getElementById("date").value,
-        urea: Number(document.getElementById("urea").value),
-        creatinine: Number(document.getElementById("creatinine").value),
-        notes: document.getElementById("notes").value.trim()
-      };
-
-      records.push(record);
-      saveRecords();
-      form.reset();
-      render();
-    });
-
-    document.getElementById("saveParams").addEventListener("click", () => {
-      params = {
-        ureaMin: Number(fields.ureaMin.value),
-        ureaMax: Number(fields.ureaMax.value),
-        creatMin: Number(fields.creatMin.value),
-        creatMax: Number(fields.creatMax.value)
-      };
-
-      saveParams();
-      render();
-      alert("Parâmetros salvos.");
-    });
-
-    function deleteRecord(id) {
-      records = records.filter((record) => record.id !== id);
-      saveRecords();
-      render();
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
-
-    document.getElementById("clearAll").addEventListener("click", () => {
-      const confirmed = confirm("Tem certeza que deseja apagar todos os registros?");
-      if (!confirmed) return;
-      records = [];
-      saveRecords();
-      render();
-    });
-
-    document.getElementById("exportCsv").addEventListener("click", () => {
-      const header = "Data,Ureia mg/dL,Creatinina mg/dL,Observacoes\n";
-      const rows = sortedRecords().map((record) => {
-        return `${record.date},${record.urea},${record.creatinine},"${(record.notes || "").replaceAll('"', '""')}"`;
-      }).join("\n");
-
-      const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "historico-renal-tata.csv";
-      link.click();
-      URL.revokeObjectURL(url);
-    });
-
-    fillParamFields();
-    render();
   </script>
 </body>
 </html>
