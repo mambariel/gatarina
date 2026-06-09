@@ -348,6 +348,65 @@
         grid-template-columns: 1fr 1fr 1fr;
       }
     }
+
+    .reference-value {
+      font-size: 1.35rem;
+      font-weight: 900;
+      margin: 8px 0 5px;
+      color: var(--accent);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .legend-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .legend-box {
+      width: 28px;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(40, 125, 60, .14);
+      border: 1px dashed rgba(40, 125, 60, .55);
+      flex: 0 0 auto;
+    }
+
+    .flag.warn {
+      background: #fff7e8;
+      color: #a15c00;
+    }
+
+    .flag.danger {
+      background: #fff1ef;
+      color: var(--danger);
+    }
+
+    @media (min-width: 920px) {
+      .grid.reference {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 980px) {
+      .charts-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .charts-grid .wide {
+        grid-column: 1 / -1;
+      }
+    }
+
   </style>
 </head>
 
@@ -360,8 +419,8 @@
           <div>
             <h1>GATARINA</h1>
             <p class="subtitle">
-              Painel de acompanhamento da ureia e creatinina da Tatá.
-              Registre exames, visualize evolução e acompanhe tendências ao longo do tempo.
+              Painel de acompanhamento da ureia, creatinina e peso da Tatá.
+              Cada indicador possui seu próprio gráfico para evitar distorções de escala.
             </p>
           </div>
         </div>
@@ -371,28 +430,24 @@
   </header>
 
   <main>
-    <section class="card" style="margin-bottom: 18px;">
-      <h2>Configuração</h2>
-      <p class="small">
-        Antes de publicar, cole no código a URL do seu Web App do Google Apps Script.
-        Os limites abaixo são opcionais e devem seguir a referência do laboratório/veterinário.
-      </p>
-      <div class="config-grid">
-        <div>
-          <label for="ureiaLimite">Limite superior da ureia</label>
-          <input id="ureiaLimite" type="number" step="0.01" placeholder="Ex.: conforme o laudo" />
-        </div>
-        <div>
-          <label for="creatininaLimite">Limite superior da creatinina</label>
-          <input id="creatininaLimite" type="number" step="0.01" placeholder="Ex.: conforme o laudo" />
-        </div>
-        <div>
-          <label for="pesoAlvo">Peso de referência da Tatá</label>
-          <input id="pesoAlvo" type="number" step="0.01" placeholder="Opcional" />
-        </div>
+    <section class="grid reference" style="margin-bottom: 18px;">
+      <div class="card">
+        <h3>Referência da ureia</h3>
+        <div class="reference-value">14,0 a 55,0 mg/dL</div>
+        <p class="small">Valores abaixo ou acima desse intervalo serão destacados automaticamente.</p>
       </div>
-      <button class="secondary" type="button" onclick="saveConfig()">Salvar limites neste navegador</button>
-      <div class="message" id="configMsg"></div>
+
+      <div class="card">
+        <h3>Referência da creatinina</h3>
+        <div class="reference-value">0,8 a 1,8 mg/dL</div>
+        <p class="small">A creatinina possui escala própria e não é comparada visualmente com a ureia.</p>
+      </div>
+
+      <div class="card">
+        <h3>Peso corporal</h3>
+        <div class="reference-value">Registro evolutivo</div>
+        <p class="small">O peso é exibido em gráfico separado, sem faixa fixa de referência.</p>
+      </div>
     </section>
 
     <section class="grid cards" style="margin-bottom: 18px;">
@@ -433,16 +488,16 @@
 
           <div class="row">
             <div>
-              <label for="ureia">Ureia</label>
-              <input id="ureia" name="ureia" type="number" step="0.01" inputmode="decimal" required placeholder="Ex.: 74.2" />
+              <label for="ureia">Ureia — mg/dL</label>
+              <input id="ureia" name="ureia" type="number" step="0.01" inputmode="decimal" required placeholder="Ex.: 48.3" />
             </div>
             <div>
-              <label for="creatinina">Creatinina</label>
-              <input id="creatinina" name="creatinina" type="number" step="0.01" inputmode="decimal" required placeholder="Ex.: 2.1" />
+              <label for="creatinina">Creatinina — mg/dL</label>
+              <input id="creatinina" name="creatinina" type="number" step="0.01" inputmode="decimal" required placeholder="Ex.: 1.4" />
             </div>
           </div>
 
-          <label for="peso">Peso</label>
+          <label for="peso">Peso — kg</label>
           <input id="peso" name="peso" type="number" step="0.01" inputmode="decimal" placeholder="Opcional" />
 
           <label for="observacao">Observação</label>
@@ -456,14 +511,48 @@
       <div class="card">
         <div class="toolbar">
           <div>
-            <h2 style="margin-bottom: 3px;">Evolução dos exames</h2>
-            <div class="small">Ureia e creatinina por data do exame.</div>
+            <h2 style="margin-bottom: 3px;">Leitura rápida</h2>
+            <div class="small">Resumo do exame mais recente da Tatá.</div>
           </div>
           <button class="secondary" type="button" onclick="loadRecords()">Atualizar</button>
         </div>
-        <div class="chart-wrap">
-          <canvas id="mainChart"></canvas>
+        <div id="quickReading" class="small">Nenhum registro carregado.</div>
+        <div class="legend-line">
+          <span class="legend-box"></span>
+          <span>Nos gráficos de ureia e creatinina, a faixa verde indica o intervalo de referência cadastrado.</span>
         </div>
+      </div>
+    </section>
+
+    <section class="charts-grid">
+      <div class="card">
+        <div class="toolbar">
+          <div>
+            <h2 style="margin-bottom: 3px;">Ureia</h2>
+            <div class="small">Referência: 14,0 a 55,0 mg/dL.</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="ureiaChart"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <div>
+            <h2 style="margin-bottom: 3px;">Creatinina</h2>
+            <div class="small">Referência: 0,8 a 1,8 mg/dL.</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="creatininaChart"></canvas></div>
+      </div>
+
+      <div class="card wide">
+        <div class="toolbar">
+          <div>
+            <h2 style="margin-bottom: 3px;">Peso</h2>
+            <div class="small">Evolução do peso corporal registrado nos exames.</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="pesoChart"></canvas></div>
       </div>
     </section>
 
@@ -482,16 +571,16 @@
             <tr>
               <th>Data</th>
               <th>Ureia</th>
+              <th>Status ureia</th>
               <th>Creatinina</th>
+              <th>Status creatinina</th>
               <th>Peso</th>
               <th>Observação</th>
               <th>Ação</th>
             </tr>
           </thead>
           <tbody id="recordsBody">
-            <tr>
-              <td colspan="6" class="empty">Nenhum registro carregado.</td>
-            </tr>
+            <tr><td colspan="8" class="empty">Nenhum registro carregado.</td></tr>
           </tbody>
         </table>
       </div>
@@ -511,20 +600,50 @@
     */
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8MmD4hdDw-dfmdkiuq7mwX1KeVYoke4FlejMgVdY2zP5Y21tNIuXpI5E8pcmx0Ga4/exec";
 
-    let records = [];
-    let chart = null;
+    const REFERENCE = {
+      ureia: { min: 14.0, max: 55.0, unit: "mg/dL", label: "Ureia" },
+      creatinina: { min: 0.8, max: 1.8, unit: "mg/dL", label: "Creatinina" }
+    };
 
+    let records = [];
+    let charts = { ureia: null, creatinina: null, peso: null };
     const $ = (id) => document.getElementById(id);
+
+    const referenceRangePlugin = {
+      id: "referenceRangePlugin",
+      beforeDatasetsDraw(chart) {
+        const range = chart.options.plugins.referenceRange;
+        if (!range || range.min === undefined || range.max === undefined) return;
+        const { ctx, chartArea, scales } = chart;
+        const yScale = scales.y;
+        const yMin = yScale.getPixelForValue(range.min);
+        const yMax = yScale.getPixelForValue(range.max);
+        const top = Math.min(yMin, yMax);
+        const height = Math.abs(yMax - yMin);
+        ctx.save();
+        ctx.fillStyle = "rgba(40, 125, 60, 0.12)";
+        ctx.fillRect(chartArea.left, top, chartArea.right - chartArea.left, height);
+        ctx.restore();
+      },
+      afterDatasetsDraw(chart) {
+        const range = chart.options.plugins.referenceRange;
+        if (!range || range.min === undefined || range.max === undefined) return;
+        const { ctx, chartArea, scales } = chart;
+        drawReferenceLine(ctx, chartArea, scales.y, range.min, `mín. ${formatNumber(range.min)} ${range.unit}`);
+        drawReferenceLine(ctx, chartArea, scales.y, range.max, `máx. ${formatNumber(range.max)} ${range.unit}`);
+      }
+    };
+
+    Chart.register(referenceRangePlugin);
 
     document.addEventListener("DOMContentLoaded", () => {
       $("data").valueAsDate = new Date();
-      loadConfig();
-
       if (isConfigured()) {
         $("connectionStatus").textContent = "Conectado ao Google Sheets";
         loadRecords();
       } else {
         $("connectionStatus").textContent = "Cole a URL do Apps Script no código";
+        renderAll();
       }
 
       $("examForm").addEventListener("submit", async (event) => {
@@ -548,9 +667,7 @@
         const url = new URL(APPS_SCRIPT_URL);
 
         Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            url.searchParams.set(key, String(value));
-          }
+          if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
         });
 
         url.searchParams.set("callback", callbackName);
@@ -564,18 +681,13 @@
         function cleanup() {
           clearTimeout(timeout);
           delete window[callbackName];
-          if (script.parentNode) {
-            script.parentNode.removeChild(script);
-          }
+          if (script.parentNode) script.parentNode.removeChild(script);
         }
 
         window[callbackName] = (data) => {
           cleanup();
-          if (data && data.ok === false) {
-            reject(new Error(data.error || "Erro retornado pelo Apps Script."));
-          } else {
-            resolve(data);
-          }
+          if (data && data.ok === false) reject(new Error(data.error || "Erro retornado pelo Apps Script."));
+          else resolve(data);
         };
 
         script.onerror = () => {
@@ -607,16 +719,15 @@
       saveBtn.textContent = "Salvando...";
 
       try {
-        const payload = {
+        await jsonpRequest({
           action: "create",
           data: $("data").value,
           ureia: $("ureia").value,
           creatinina: $("creatinina").value,
           peso: $("peso").value,
           observacao: $("observacao").value
-        };
+        });
 
-        await jsonpRequest(payload);
         $("examForm").reset();
         $("data").valueAsDate = new Date();
         showMessage("formMsg", "Exame salvo com sucesso.", "success");
@@ -664,8 +775,9 @@
 
     function renderAll() {
       renderKpis();
-      renderChart();
+      renderCharts();
       renderTable();
+      renderQuickReading();
     }
 
     function renderKpis() {
@@ -687,10 +799,9 @@
       const last = records[records.length - 1];
       const previous = records.length > 1 ? records[records.length - 2] : null;
 
-      $("lastUreia").textContent = formatNumber(last.ureia);
-      $("lastCreatinina").textContent = formatNumber(last.creatinina);
+      $("lastUreia").textContent = `${formatNumber(last.ureia)} mg/dL`;
+      $("lastCreatinina").textContent = `${formatNumber(last.creatinina)} mg/dL`;
       $("lastPeso").textContent = last.peso ? `${formatNumber(last.peso)} kg` : "—";
-
       $("lastUreiaSub").textContent = variationText(last.ureia, previous?.ureia, "registro anterior");
       $("lastCreatininaSub").textContent = variationText(last.creatinina, previous?.creatinina, "registro anterior");
       $("lastPesoSub").textContent = last.data ? `Último exame em ${formatDate(last.data)}` : "Opcional";
@@ -699,8 +810,8 @@
       const lastDate = formatDate(last.data);
       $("periodoRegistros").textContent = records.length === 1 ? `1 exame em ${lastDate}` : `${firstDate} a ${lastDate}`;
 
-      renderFlag("ureiaFlag", last.ureia, Number(localStorage.getItem("gatarina_ureiaLimite")));
-      renderFlag("creatininaFlag", last.creatinina, Number(localStorage.getItem("gatarina_creatininaLimite")));
+      $("ureiaFlag").innerHTML = statusFlag(last.ureia, REFERENCE.ureia);
+      $("creatininaFlag").innerHTML = statusFlag(last.creatinina, REFERENCE.creatinina);
     }
 
     function variationText(current, previous, label) {
@@ -710,117 +821,138 @@
       return `${sign}${formatNumber(diff)} em relação ao ${label}`;
     }
 
-    function renderFlag(elementId, value, limit) {
-      if (!value || !limit) {
-        $(elementId).innerHTML = "";
-        return;
-      }
-
-      if (value > limit) {
-        $(elementId).innerHTML = `<span class="flag warn">Acima do limite configurado</span>`;
-      } else {
-        $(elementId).innerHTML = `<span class="flag ok">Dentro do limite configurado</span>`;
-      }
+    function classifyValue(value, reference) {
+      if (value === null || value === undefined || Number.isNaN(value)) return { type: "empty", text: "Sem valor" };
+      if (value < reference.min) return { type: "low", text: "Abaixo da referência" };
+      if (value > reference.max) return { type: "high", text: "Acima da referência" };
+      return { type: "ok", text: "Dentro da referência" };
     }
 
-    function renderChart() {
-      const ctx = $("mainChart");
+    function statusFlag(value, reference) {
+      const status = classifyValue(value, reference);
+      if (status.type === "empty") return "";
+      if (status.type === "ok") return `<span class="flag ok">${status.text}</span>`;
+      if (status.type === "low") return `<span class="flag warn">${status.text}</span>`;
+      return `<span class="flag danger">${status.text}</span>`;
+    }
 
-      const labels = records.map((r) => formatDate(r.data));
-      const ureiaData = records.map((r) => r.ureia);
-      const creatininaData = records.map((r) => r.creatinina);
+    function renderCharts() {
+      renderMetricChart({ chartKey: "ureia", canvasId: "ureiaChart", label: "Ureia", dataKey: "ureia", unit: "mg/dL", reference: REFERENCE.ureia });
+      renderMetricChart({ chartKey: "creatinina", canvasId: "creatininaChart", label: "Creatinina", dataKey: "creatinina", unit: "mg/dL", reference: REFERENCE.creatinina });
+      renderMetricChart({ chartKey: "peso", canvasId: "pesoChart", label: "Peso", dataKey: "peso", unit: "kg", reference: null });
+    }
 
-      if (chart) {
-        chart.destroy();
-      }
+    function renderMetricChart({ chartKey, canvasId, label, dataKey, unit, reference }) {
+      const ctx = $(canvasId);
+      const filteredRecords = records.filter((r) => r[dataKey] !== null && r[dataKey] !== undefined);
+      const labels = filteredRecords.map((r) => formatDate(r.data));
+      const values = filteredRecords.map((r) => r[dataKey]);
 
-      chart = new Chart(ctx, {
+      if (charts[chartKey]) charts[chartKey].destroy();
+      const yBounds = calculateYAxisBounds(values, reference);
+
+      charts[chartKey] = new Chart(ctx, {
         type: "line",
         data: {
           labels,
-          datasets: [
-            {
-              label: "Ureia",
-              data: ureiaData,
-              tension: 0.25,
-              pointRadius: 4,
-              borderWidth: 3
-            },
-            {
-              label: "Creatinina",
-              data: creatininaData,
-              tension: 0.25,
-              pointRadius: 4,
-              borderWidth: 3
-            }
-          ]
+          datasets: [{ label: `${label} (${unit})`, data: values, tension: 0.25, pointRadius: 4, borderWidth: 3, spanGaps: true }]
         },
         options: {
           maintainAspectRatio: false,
           responsive: true,
-          interaction: {
-            mode: "index",
-            intersect: false
-          },
+          interaction: { mode: "index", intersect: false },
           plugins: {
-            legend: {
-              position: "bottom"
-            },
+            legend: { position: "bottom" },
+            referenceRange: reference ? { min: reference.min, max: reference.max, unit } : false,
             tooltip: {
               callbacks: {
+                label: (item) => `${item.dataset.label}: ${formatNumber(item.raw)} ${unit}`,
                 afterBody: (items) => {
                   const index = items[0].dataIndex;
-                  const obs = records[index]?.observacao;
+                  const obs = filteredRecords[index]?.observacao;
                   return obs ? `Observação: ${obs}` : "";
                 }
               }
             }
           },
           scales: {
-            y: {
-              beginAtZero: false
-            }
+            y: { beginAtZero: false, suggestedMin: yBounds.min, suggestedMax: yBounds.max, title: { display: true, text: unit } },
+            x: { title: { display: true, text: "Data do exame" } }
           }
         }
       });
     }
 
+    function calculateYAxisBounds(values, reference) {
+      const numericValues = values.filter((value) => typeof value === "number" && Number.isFinite(value));
+      const candidates = [...numericValues];
+      if (reference) candidates.push(reference.min, reference.max);
+      if (!candidates.length) return { min: 0, max: 1 };
+      const min = Math.min(...candidates);
+      const max = Math.max(...candidates);
+      const range = max - min || max || 1;
+      const padding = range * 0.18;
+      return { min: Math.max(0, min - padding), max: max + padding };
+    }
+
+    function drawReferenceLine(ctx, chartArea, yScale, value, text) {
+      const y = yScale.getPixelForValue(value);
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = "rgba(40, 125, 60, 0.70)";
+      ctx.lineWidth = 1.2;
+      ctx.moveTo(chartArea.left, y);
+      ctx.lineTo(chartArea.right, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(40, 125, 60, 0.95)";
+      ctx.font = "12px Arial";
+      ctx.textAlign = "right";
+      ctx.fillText(text, chartArea.right - 6, y - 6);
+      ctx.restore();
+    }
+
+    function renderQuickReading() {
+      if (!records.length) {
+        $("quickReading").innerHTML = "Nenhum registro carregado.";
+        return;
+      }
+
+      const last = records[records.length - 1];
+      const ureiaStatus = classifyValue(last.ureia, REFERENCE.ureia).text;
+      const creatininaStatus = classifyValue(last.creatinina, REFERENCE.creatinina).text;
+      const obs = last.observacao ? `<p><strong>Observação:</strong> ${escapeHtml(last.observacao)}</p>` : "";
+
+      $("quickReading").innerHTML = `
+        <p><strong>Último exame:</strong> ${formatDate(last.data)}</p>
+        <p><strong>Ureia:</strong> ${formatNumber(last.ureia)} mg/dL — ${ureiaStatus}.</p>
+        <p><strong>Creatinina:</strong> ${formatNumber(last.creatinina)} mg/dL — ${creatininaStatus}.</p>
+        <p><strong>Peso:</strong> ${last.peso ? `${formatNumber(last.peso)} kg` : "não informado"}.</p>
+        ${obs}
+      `;
+    }
+
     function renderTable() {
       const tbody = $("recordsBody");
-
       if (!records.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="empty">Nenhum registro carregado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="empty">Nenhum registro carregado.</td></tr>`;
         return;
       }
 
       const rows = [...records].reverse().map((record) => `
         <tr>
           <td>${formatDate(record.data)}</td>
-          <td>${formatNumber(record.ureia)}</td>
-          <td>${formatNumber(record.creatinina)}</td>
+          <td>${formatNumber(record.ureia)} mg/dL</td>
+          <td>${statusFlag(record.ureia, REFERENCE.ureia)}</td>
+          <td>${formatNumber(record.creatinina)} mg/dL</td>
+          <td>${statusFlag(record.creatinina, REFERENCE.creatinina)}</td>
           <td>${record.peso ? `${formatNumber(record.peso)} kg` : "—"}</td>
           <td>${escapeHtml(record.observacao || "—")}</td>
-          <td>
-            <button class="danger" type="button" onclick="deleteRecord('${record.id}')">Excluir</button>
-          </td>
+          <td><button class="danger" type="button" onclick="deleteRecord('${record.id}')">Excluir</button></td>
         </tr>
       `);
-
       tbody.innerHTML = rows.join("");
-    }
-
-    function saveConfig() {
-      localStorage.setItem("gatarina_ureiaLimite", $("ureiaLimite").value);
-      localStorage.setItem("gatarina_creatininaLimite", $("creatininaLimite").value);
-      localStorage.setItem("gatarina_pesoAlvo", $("pesoAlvo").value);
-      showMessage("configMsg", "Configuração salva neste navegador.", "success");
-      renderKpis();
-    }
-
-    function loadConfig() {
-      $("ureiaLimite").value = localStorage.getItem("gatarina_ureiaLimite") || "";
-      $("creatininaLimite").value = localStorage.getItem("gatarina_creatininaLimite") || "";
-      $("pesoAlvo").value = localStorage.getItem("gatarina_pesoAlvo") || "";
     }
 
     function exportCSV() {
@@ -829,11 +961,13 @@
         return;
       }
 
-      const header = ["data", "ureia", "creatinina", "peso", "observacao"];
+      const header = ["data", "ureia", "status_ureia", "creatinina", "status_creatinina", "peso", "observacao"];
       const lines = records.map((r) => [
         r.data,
         r.ureia ?? "",
+        classifyValue(r.ureia, REFERENCE.ureia).text,
         r.creatinina ?? "",
+        classifyValue(r.creatinina, REFERENCE.creatinina).text,
         r.peso ?? "",
         `"${String(r.observacao || "").replaceAll('"', '""')}"`
       ].join(","));
@@ -848,25 +982,18 @@
       URL.revokeObjectURL(url);
     }
 
-    function setConnection(text) {
-      $("connectionStatus").textContent = text;
-    }
+    function setConnection(text) { $("connectionStatus").textContent = text; }
 
     function showMessage(id, text, type) {
       const el = $(id);
       el.textContent = text;
       el.className = `message show ${type}`;
-      setTimeout(() => {
-        el.className = "message";
-      }, 5000);
+      setTimeout(() => { el.className = "message"; }, 5000);
     }
 
     function formatNumber(value) {
       if (value === null || value === undefined || Number.isNaN(value)) return "—";
-      return Number(value).toLocaleString("pt-BR", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2
-      });
+      return Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     }
 
     function formatDate(dateString) {
